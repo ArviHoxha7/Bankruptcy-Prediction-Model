@@ -25,7 +25,6 @@ def remove_low_importance_features(X, y, threshold_importance=0.01):
 
     return X_clean, low_importance
 
-import shap
 
 def remove_low_shap_features(X, y, threshold=0.01):
     model = XGBClassifier(eval_metric='logloss')

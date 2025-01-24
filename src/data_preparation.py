@@ -32,7 +32,6 @@ def preprocess_and_split_data(data, target_column='X65', test_size=0.2):
     X = data.drop(columns=[target_column])
     y = data[target_column]
 
-    # Ενεργοποίηση shuffle
     X_train, X_test, y_train, y_test = train_test_split(
         X, y,
         test_size=test_size,
@@ -40,11 +39,10 @@ def preprocess_and_split_data(data, target_column='X65', test_size=0.2):
     )
 
     scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+    X_train_scaled = pd.DataFrame(scaler.fit_transform(X_train), columns=X_train.columns)
+    X_test_scaled = pd.DataFrame(scaler.transform(X_test), columns=X_test.columns)
 
     return X_train_scaled, X_test_scaled, y_train, y_test, scaler
-
 def prepare_unseen_data(filepath, required_columns, scaler, X_train_columns, imputation_values):
     """Φορτώνει και προετοιμάζει τα άγνωστα δεδομένα με βάση τις στρατηγικές εκπαίδευσης."""
     # Φόρτωση δεδομένων

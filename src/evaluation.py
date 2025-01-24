@@ -1,11 +1,8 @@
 import numpy as np
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve, f1_score
+from sklearn.metrics import classification_report, confusion_matrix, f1_score
 import pandas as pd
 
-from sklearn.metrics import precision_recall_curve
 
-
-# In evaluation.py
 def evaluate_model(model, X_test, y_test):
     y_pred_proba = model.predict_proba(X_test)[:, 1]
 
