@@ -1,26 +1,31 @@
 import numpy as np
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve, f1_score
 import pandas as pd
 
-from sklearn.metrics import roc_curve
+from sklearn.metrics import precision_recall_curve
 
 
+# In evaluation.py
 def evaluate_model(model, X_test, y_test):
     y_pred_proba = model.predict_proba(X_test)[:, 1]
 
-    # Find optimal threshold
-    fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
-    optimal_idx = np.argmax(tpr - fpr)
-    optimal_threshold = thresholds[optimal_idx]
+    # Find threshold that maximizes F1-score
+    f1_scores = []
+    thresholds = np.linspace(0.1, 0.9, 50)
 
-    y_pred = (y_pred_proba > optimal_threshold).astype(int)
+    for thresh in thresholds:
+        y_pred = (y_pred_proba > thresh).astype(int)
+        f1 = f1_score(y_test, y_pred)
+        f1_scores.append(f1)
 
-    print("Optimal Threshold:", optimal_threshold)
+    best_threshold = thresholds[np.argmax(f1_scores)]
+    y_pred = (y_pred_proba > best_threshold).astype(int)
+
+    print(f"Optimal F1 Threshold: {best_threshold:.4f}")
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
 
-    return optimal_threshold
-
+    return best_threshold
 
 def predict_unseen_data(model, unseen_data, scaler, output_file, threshold=0.5):
     """Κάνει πρόβλεψη για τα άγνωστα δεδομένα και αποθηκεύει τα αποτελέσματα."""
