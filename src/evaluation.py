@@ -1,21 +1,25 @@
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, roc_curve
 import pandas as pd
 
-def evaluate_model(model, X_test, y_test, threshold=0.5):
-    """Αξιολογεί το μοντέλο σε δεδομένα ελέγχου."""
+from sklearn.metrics import roc_curve
+
+
+def evaluate_model(model, X_test, y_test):
     y_pred_proba = model.predict_proba(X_test)[:, 1]
-    y_pred = (y_pred_proba > threshold).astype(int)
 
-    print("Confusion Matrix:")
+    # Find optimal threshold
+    fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
+    optimal_idx = np.argmax(tpr - fpr)
+    optimal_threshold = thresholds[optimal_idx]
+
+    y_pred = (y_pred_proba > optimal_threshold).astype(int)
+
+    print("Optimal Threshold:", optimal_threshold)
     print(confusion_matrix(y_test, y_pred))
-
-    print("\nClassification Report:")
     print(classification_report(y_test, y_pred))
 
-    roc_auc = roc_auc_score(y_test, y_pred_proba)
-    print(f"\nROC-AUC Score: {roc_auc:.4f}")
-
-    return y_pred_proba
+    return optimal_threshold
 
 
 def predict_unseen_data(model, unseen_data, scaler, output_file, threshold=0.5):

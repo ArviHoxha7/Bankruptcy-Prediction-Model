@@ -12,7 +12,7 @@ def remove_high_correlation_features(data, threshold=0.99):
 def remove_low_importance_features(X, y, threshold_importance=0.01):
     from xgboost import XGBClassifier
 
-    xgb_model = XGBClassifier(eval_metric='logloss', random_state=42)
+    xgb_model = XGBClassifier(eval_metric='logloss')
     xgb_model.fit(X, y)
 
     importances = xgb_model.feature_importances_

@@ -7,6 +7,10 @@ def train_xgboost_model(X_train, y_train, scale_pos_weight):
     xgb_model = XGBClassifier(
         eval_metric='logloss',
         scale_pos_weight=scale_pos_weight,
+        # max_depth=4,  # Reduced from default (6)
+        # learning_rate=0.05,  # Reduced from default (0.3)
+        # subsample=0.8,  # Prevent overfitting
+        colsample_bytree=0.8,
         random_state=42
     )
     xgb_model.fit(X_train, y_train)
