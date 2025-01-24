@@ -68,14 +68,6 @@ def prepare_unseen_data(filepath, scaler, X_train_columns, imputation_values):
     unseen_data = pd.read_csv(filepath, header=None)
     unseen_data = unseen_data.replace("?", np.nan)
     unseen_data.columns = required_columns
-    # Identify rows that exceed this threshold
-    rows_to_drop = unseen_data.index[unseen_data.isnull().sum(axis=1) > 0.5 * unseen_data.shape[1]]
-
-    # Rows dropped
-    print(f"Dropping {len(rows_to_drop)} rows with >50% missing values from unseen data")
-
-    # Drop these rows from the DataFrame
-    unseen_data.drop(rows_to_drop, inplace=True)
 
     # Εφαρμογή των ίδιων στρατηγικών αντικατάστασης
     for column, strategy_value in imputation_values.items():
