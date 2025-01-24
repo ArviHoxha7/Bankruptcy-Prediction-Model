@@ -27,7 +27,8 @@ columns_with_replacements = {
 }
 
 # Καθαρισμός δεδομένων
-train_data = load_and_clean_data("data/training_companydata.csv", columns_with_replacements)
+train_data, imputation_values = load_and_clean_data("data/training_companydata.csv", columns_with_replacements)
+#train_data = train_data.sample(frac=1, random_state=42).reset_index(drop=True)
 train_data, removed_columns = remove_high_correlation_features(train_data)
 
 # Αποθήκευση καθαρισμένων δεδομένων
@@ -43,43 +44,20 @@ xgb_model = train_xgboost_model(X_train_scaled, y_train, scale_pos_weight)
 # Αξιολόγηση μοντέλου
 evaluate_model(xgb_model, X_test_scaled, y_test, threshold=0.6)
 
-# Φόρτωση άγνωστων δεδομένων
-unseen_data = pd.read_csv("data/test_unlabeled.csv", header=None)  # Χωρίς ονόματα στηλών
-unseen_data = unseen_data.replace("?", np.nan)
+# Φόρτωση & προετοιμασία άγνωστων δεδομένων ΜΕ ΤΗΝ ΣΥΝΑΡΤΗΣΗ
+required_columns = [f'X{i}' for i in range(1, 65)]  # Correct X1-X64
+X = train_data.drop(columns=['X65'])  # Get final training features
 
-# Δημιουργία ονομάτων στηλών
-required_columns = ['X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9', 'X10',
-                    'X11', 'X12', 'X13', 'X14', 'X15', 'X16', 'X17', 'X18', 'X19', 'X20',
-                    'X21', 'X22', 'X23', 'X24', 'X25', 'X26', 'X27', 'X28', 'X29', 'X30',
-                    'X31', 'X32', 'X33', 'X34', 'X35', 'X36', 'X37', 'X38', 'X39', 'X40',
-                    'X41', 'X42', 'X43', 'X44', 'X45', 'X46', 'X47', 'X48', 'X49', 'X50',
-                    'X51', 'X52', 'X53', 'X54', 'X55', 'X56', 'X57', 'X58', 'X59', 'X60',
-                    'X61', 'X66', 'X63', 'X64']
-
-unseen_data.columns = required_columns
-
-# Χρήση των στηλών από τα δεδομένα εκπαίδευσης
-# Ορισμός των χαρακτηριστικών (X) από τα δεδομένα εκπαίδευσης
-train_data = pd.read_csv("data/cleaned_training_data.csv")  # Υποθέτουμε ότι αυτό περιέχει τα δεδομένα μετά τον καθαρισμό
-X = train_data.drop(columns=['X65'])  # Αφαίρεση της στήλης στόχου
-
-# Προσθήκη ελλιπουσών στηλών με τιμή 0
-for col in X.columns:
-    if col not in unseen_data.columns:
-        unseen_data[col] = 0
-
-# Διασφάλιση σωστών ονομάτων στηλών στα άγνωστα δεδομένα
-unseen_data = pd.DataFrame(unseen_data, columns=X.columns)
-
-# Κανονικοποίηση άγνωστων δεδομένων
-unseen_data_scaled = scaler.transform(unseen_data)
+unseen_data_scaled = prepare_unseen_data(
+    filepath="data/test_unlabeled.csv",
+    required_columns=required_columns,
+    scaler=scaler,
+    X_train_columns=X.columns.tolist(),  # Final features after selection
+    imputation_values=imputation_values  # From training phase
+)
 
 # Πρόβλεψη για τα άγνωστα δεδομένα
 predict_unseen_data(xgb_model, unseen_data_scaled, scaler, "outputs/test_predictions.csv", threshold=0.6)
-
-# Έλεγχος για ελλείπουσες ή επιπλέον στήλες
-print("Missing columns in unseen data:", set(X.columns) - set(unseen_data.columns))
-print("Extra columns in unseen data:", set(unseen_data.columns) - set(X.columns))
 
 # Δημιουργία αρχείου προγνώσεων
 test_predictions = pd.DataFrame({
@@ -105,5 +83,4 @@ top_50 = rowid_probabilities.sort_values(by='probability', ascending=False).head
 # Δημιουργία αρχείου με τα rowids
 top_50[['rowid']].to_csv("outputs/top_50_predictions.csv", index=False, header=False)
 print("Το αρχείο 'top_50_predictions.csv' δημιουργήθηκε.")
-# Εμφανιζει τις 50
-print(top_50)
+# print(top_50)
