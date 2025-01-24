@@ -111,12 +111,10 @@ evaluate_model(cat_model_top10, X_test_scaled[top_10_features], y_test)
 # ======================================================================
 
 # Φόρτωση & προετοιμασία άγνωστων δεδομένων
-required_columns = [f'X{i}' for i in range(1, 65)]  # Correct X1-X64
 X = train_data.drop(columns=['X65'])  # Get final training features
 
 unseen_data_scaled = prepare_unseen_data(
     filepath="data/test_unlabeled.csv",
-    required_columns=required_columns,
     scaler=scaler,
     X_train_columns=X.columns.tolist(),  # Final features after selection
     imputation_values=imputation_values  # From training phase
