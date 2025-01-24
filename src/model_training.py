@@ -1,7 +1,4 @@
 from sklearn.metrics import roc_auc_score, f1_score, precision_score, recall_score
-import numpy as np
-from xgboost import XGBClassifier
-from hyperopt import fmin, tpe, hp, STATUS_OK
 from catboost import CatBoostClassifier
 
 def train_catboost_model(X_train, y_train):

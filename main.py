@@ -36,6 +36,7 @@ columns_with_replacements = {
 train_data, imputation_values = load_and_clean_data("data/training_companydata.csv", columns_with_replacements)
 train_data = train_data.sample(frac=1).reset_index(drop=True)  # Ανακάτεμα δεδομένων
 train_data, removed_columns = remove_high_correlation_features(train_data)
+print(len(removed_columns), "highly correlated features removed.")
 
 # Διαγραφή low-importance features
 X = train_data.drop(columns=['X65'])  # Features only
@@ -43,10 +44,10 @@ y = train_data['X65']                # Target
 
 # Apply feature importance filtering
 X_clean, low_importance_columns = remove_low_importance_features(X, y, threshold_importance=0.01)
-
+print(len(low_importance_columns), "low-importance features removed.")
 # Rebuild the cleaned dataset
 train_data = pd.concat([X_clean, y], axis=1)
-
+print("Remaining Columns: ", len(X_clean.columns))
 # Αποθήκευση καθαρισμένων δεδομένων
 train_data.to_csv("data/cleaned_training_data.csv", index=False)
 print("Τα καθαρισμένα δεδομένα αποθηκεύτηκαν.")
